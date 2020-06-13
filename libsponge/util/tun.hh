@@ -4,6 +4,7 @@
 #include "file_descriptor.hh"
 
 #include <string>
+#include <sys/socket.h>
 
 //! A FileDescriptor to a [Linux TUN](https://www.kernel.org/doc/Documentation/networking/tuntap.txt) device
 class TunFD : public FileDescriptor {
