@@ -5,6 +5,19 @@
 
 #include <cstdint>
 #include <string>
+// #include <list>
+#include <deque>
+#include <limits>
+
+
+struct Segment {
+    std::string data;
+    uint64_t index;
+    bool eof;
+
+    Segment(const std::string &_data, const uint64_t _index, const bool _eof) : 
+        data(_data), index(_index), eof(_eof) {}
+};
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
@@ -14,6 +27,11 @@ class StreamReassembler {
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+    // std::list<Segment> _segments{};
+    std::deque<int> _buffer;
+    size_t _start_index = 0;
+    size_t _buffer_size = 0;
+    size_t _eof_index = std::numeric_limits<size_t>::max();
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
