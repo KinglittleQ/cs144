@@ -1,3 +1,15 @@
+## Personal Progress
+
+- [x] Lab 0: networking warmup
+- [x] Lab 1: stitching substrings into a byte stream
+- [ ] Lab 2
+- [ ] Lab 3
+- [ ] Lab 4
+- [ ] Lab 5
+- [ ] Lab 6
+
+------
+
 For build prereqs, see [the CS144 VM setup instructions](https://web.stanford.edu/class/cs144/vm_howto).
 
 ## Sponge quickstart
