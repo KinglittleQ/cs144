@@ -14,8 +14,8 @@ using namespace std;
 
 constexpr int EMPTY_CHAR = -1000;
 
-StreamReassembler::StreamReassembler(const size_t capacity) : 
-    _output(capacity), _capacity(capacity), _buffer(capacity, EMPTY_CHAR) {}
+StreamReassembler::StreamReassembler(const size_t capacity)
+    : _output(capacity), _capacity(capacity), _buffer(capacity, EMPTY_CHAR) {}
 
 //! \details This function accepts a substring (aka a segment) of bytes,
 //! possibly out-of-order, from the logical stream, and assembles any newly
@@ -23,8 +23,7 @@ StreamReassembler::StreamReassembler(const size_t capacity) :
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
     // DUMMY_CODE(data, index, eof);
 
-    if (_eof_index != std::numeric_limits<size_t>::max() 
-            && index + data.size() > _eof_index) {
+    if (_eof_index != std::numeric_limits<size_t>::max() && index + data.size() > _eof_index) {
         return;
     }
 
@@ -32,9 +31,9 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
         if (index + i >= _start_index && index + i < _start_index + _capacity) {
             if (_buffer[index + i - _start_index] == EMPTY_CHAR) {
                 _buffer_size++;
-	    }
+            }
             _buffer[index + i - _start_index] = static_cast<int>(data[i]);
-	}
+        }
     }
 
     if (eof) {
@@ -47,10 +46,9 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
     for (i = 0; i < _buffer.size(); i++) {
         if (_buffer[i] != EMPTY_CHAR) {
             pop_str += static_cast<char>(_buffer[i]);
-	}
-	else {
+        } else {
             break;
-	}
+        }
     }
 
     if (!written)
@@ -60,13 +58,12 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
         _output.end_input();
     }
 
-
     size_t num_bytes_popped = i;
     for (i = 0; i < num_bytes_popped; i++) {
         _buffer.pop_front();
-	_buffer.push_back(EMPTY_CHAR);
-	_start_index++;
-	_buffer_size--;
+        _buffer.push_back(EMPTY_CHAR);
+        _start_index++;
+        _buffer_size--;
     }
 }
 
