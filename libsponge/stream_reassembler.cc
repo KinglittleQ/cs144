@@ -44,7 +44,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
     size_t i;
     bool written = false;
     for (i = 0; i < _buffer.size(); i++) {
-        if (_buffer[i] != EMPTY_CHAR) {
+        if (_buffer[i] != EMPTY_CHAR && i < _output.remaining_capacity()) {
             pop_str += static_cast<char>(_buffer[i]);
         } else {
             break;
