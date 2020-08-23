@@ -27,7 +27,7 @@ class Timer {
 
     void update_time(size_t timestamp) { _now_time = timestamp; }
 
-    bool timeout(void) const { return (running() && (_now_time - _start_time > _rto)); }
+    bool timeout(void) const { return (running() && (_now_time - _start_time >= _rto)); }
 
     void double_rto(void) { _rto *= 2u; }
 
