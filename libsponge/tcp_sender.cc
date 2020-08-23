@@ -32,16 +32,19 @@ void TCPSender::fill_window() {
         return;
     }
 
-    if (_stream.eof()) {
-        seg.header().fin = true;
-    }
+    //if (_stream.eof()) {
+    //    seg.header().fin = true;
+    //}
     if (_bytes_sent == 0) {
         seg.header().syn = true;
     }
+
+    //size_t syn = seg.header().syn ? 1 : 0;
+    //size_t fin = 
     
     size_t label_size = seg.length_in_sequence_space();
     uint16_t window_size = _window_size > 0u ? _window_size : 1u;
-    if (bytes_in_flight() + label_size > window_size) {
+    if (bytes_in_flight() + label_size > window_size || bytes_in_flight() >= window_size) {
         return;
     }
    size_t payload_length = window_size - bytes_in_flight() - label_size;
@@ -52,20 +55,23 @@ void TCPSender::fill_window() {
 	payload_length = TCPConfig::MAX_PAYLOAD_SIZE;
     }
 
-    if (label_size + payload_length == 0u) {
+    if (label_size + payload_length == 0u && !_stream.eof()) {
 	return;
     }
 
     seg.payload() = Buffer(_stream.read(payload_length));
     seg.header().seqno = next_seqno();
 
+    if (window_size > bytes_in_flight() + seg.length_in_sequence_space()) {
+        _eof = _stream.eof();
+	seg.header().fin = _stream.eof();
+    }
+
     _segments_out.push(seg);
     _segments_unack.push(seg);
     _bytes_sent += seg.length_in_sequence_space();
 
-    if (seg.header().fin) {
-        _eof = true;
-    }
+
 
     if (!_timer.running()) {
 	_timer.reset_rto(_initial_retransmission_timeout);
