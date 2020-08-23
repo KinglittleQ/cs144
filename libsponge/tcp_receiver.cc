@@ -27,22 +27,22 @@ bool TCPReceiver::segment_received(const TCPSegment &seg) {
             return false;
         }
 
-        _reassembler.push_substring(seg.payload().copy(), 0u, hdr.fin);
+        _reassembler.push_substring(seg.payload().copy(), 0ul, hdr.fin);
 
         return true;
     } else {
         uint64_t checkpoint = _reassembler.stream_out().bytes_written();
         uint64_t index = unwrap(hdr.seqno, _isn, checkpoint);
         if (!hdr.syn) {
-            index = index - 1u;
+            index = index - 1ul;
         }
 
         uint64_t left_bound, right_bound;
         uint64_t left_seg, right_seg;
         uint64_t win_size = window_size();
         uint64_t length = seg.length_in_sequence_space();
-        win_size = win_size != 0u ? win_size : 1u;
-        length = length != 0u ? length : 1u;
+        win_size = win_size != 0ul ? win_size : 1ul;
+        length = length != 0ul ? length : 1ul;
 
         left_bound = unwrap(ackno().value(), _isn, checkpoint);
         right_bound = left_bound + win_size;
@@ -61,7 +61,7 @@ bool TCPReceiver::segment_received(const TCPSegment &seg) {
 
 optional<WrappingInt32> TCPReceiver::ackno() const {
     if (_start) {
-        uint64_t n = 1 + _reassembler.stream_out().bytes_written() + _end;
+        uint64_t n = 1ul + _reassembler.stream_out().bytes_written() + _end;
         return wrap(n, _isn);
     } else {
         return nullopt;
