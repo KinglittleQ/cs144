@@ -2,8 +2,8 @@
 
 #include "tcp_config.hh"
 
-#include <random>
 #include <iostream>
+#include <random>
 // Dummy implementation of a TCP sender
 
 // For Lab 3, please replace with a real implementation that passes the
@@ -20,7 +20,7 @@ using namespace std;
 TCPSender::TCPSender(const size_t capacity, const uint16_t retx_timeout, const std::optional<WrappingInt32> fixed_isn)
     : _isn(fixed_isn.value_or(WrappingInt32{random_device()()}))
     , _initial_retransmission_timeout{retx_timeout}
-    , _stream(capacity) 
+    , _stream(capacity)
     , _timer(retx_timeout) {}
 
 uint64_t TCPSender::bytes_in_flight() const { return _bytes_sent - _bytes_received; }
@@ -32,31 +32,31 @@ void TCPSender::fill_window() {
         return;
     }
 
-    //if (_stream.eof()) {
+    // if (_stream.eof()) {
     //    seg.header().fin = true;
     //}
     if (_bytes_sent == 0) {
         seg.header().syn = true;
     }
 
-    //size_t syn = seg.header().syn ? 1 : 0;
-    //size_t fin = 
-    
+    // size_t syn = seg.header().syn ? 1 : 0;
+    // size_t fin =
+
     size_t label_size = seg.length_in_sequence_space();
     uint16_t window_size = _window_size > 0u ? _window_size : 1u;
     if (bytes_in_flight() + label_size > window_size || bytes_in_flight() >= window_size) {
         return;
     }
-   size_t payload_length = window_size - bytes_in_flight() - label_size;
+    size_t payload_length = window_size - bytes_in_flight() - label_size;
     if (payload_length > _stream.buffer_size()) {
-	payload_length = _stream.buffer_size();
+        payload_length = _stream.buffer_size();
     }
     if (payload_length > TCPConfig::MAX_PAYLOAD_SIZE) {
-	payload_length = TCPConfig::MAX_PAYLOAD_SIZE;
+        payload_length = TCPConfig::MAX_PAYLOAD_SIZE;
     }
 
     if (label_size + payload_length == 0u && !_stream.eof()) {
-	return;
+        return;
     }
 
     seg.payload() = Buffer(_stream.read(payload_length));
@@ -64,17 +64,15 @@ void TCPSender::fill_window() {
 
     if (window_size > bytes_in_flight() + seg.length_in_sequence_space()) {
         _eof = _stream.eof();
-	seg.header().fin = _stream.eof();
+        seg.header().fin = _stream.eof();
     }
 
     _segments_out.push(seg);
     _segments_unack.push(seg);
     _bytes_sent += seg.length_in_sequence_space();
 
-
-
     if (!_timer.running()) {
-	_timer.reset_rto(_initial_retransmission_timeout);
+        _timer.reset_rto(_initial_retransmission_timeout);
         _timer.start(_timestamp);
     }
 }
@@ -88,16 +86,16 @@ bool TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
 
     uint64_t abs_ackno = unwrap(ackno, _isn, _bytes_received);
     if (abs_ackno > _bytes_sent) {
-	return false;
+        return false;
     }
     if (abs_ackno < _bytes_received) {
-	return true;
+        return true;
     }
 
     _window_size = window_size;
     if (abs_ackno == _bytes_received) {
         fill_window();
-	return true;
+        return true;
     }
 
     // new data been ack
@@ -107,13 +105,13 @@ bool TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
     _bytes_received = abs_ackno;
 
     while (!_segments_unack.empty()) {
-	TCPSegment &seg = _segments_unack.front();
+        TCPSegment &seg = _segments_unack.front();
         uint64_t abs_seqno = unwrap(seg.header().seqno, _isn, _bytes_received);
-	if (abs_seqno + seg.length_in_sequence_space() <= abs_ackno) {
+        if (abs_seqno + seg.length_in_sequence_space() <= abs_ackno) {
             _segments_unack.pop();
-	} else {
+        } else {
             break;
-	}
+        }
     }
 
     if (!_segments_unack.empty()) {
@@ -126,20 +124,20 @@ bool TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
 }
 
 //! \param[in] ms_since_last_tick the number of milliseconds since the last call to this method
-void TCPSender::tick(const size_t ms_since_last_tick) { 
+void TCPSender::tick(const size_t ms_since_last_tick) {
     // DUMMY_CODE(ms_since_last_tick);
     _timestamp += ms_since_last_tick;
 
     if (!_timer.running()) {
-	return;
+        return;
     }
 
     _timer.update_time(_timestamp);
     if (_timer.timeout()) {
         _segments_out.push(_segments_unack.front());
-	_consecutive_retrans += 1;
+        _consecutive_retrans += 1;
         _timer.double_rto();
-	_timer.start(_timestamp);
+        _timer.start(_timestamp);
     }
 }
 
@@ -156,8 +154,4 @@ WrappingInt32 TCPSender::_next_seqno(void) const {
     return wrap(_bytes_sent, _isn);
 }*/
 
-WrappingInt32 TCPSender::_ackno(void) const {
-    return wrap(_bytes_received, _isn);
-}
-
-
+WrappingInt32 TCPSender::_ackno(void) const { return wrap(_bytes_received, _isn); }

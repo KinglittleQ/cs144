@@ -31,12 +31,17 @@ class Timer {
 
     void double_rto(void) { _rto *= 2u; }
 
-    void start(size_t timestamp) { _start_time = _now_time = timestamp; _running = true; }
+    void start(size_t timestamp) {
+        _start_time = _now_time = timestamp;
+        _running = true;
+    }
 
     bool running(void) const { return _running; }
 
-    void reset_rto(unsigned int rto) { _rto = rto; _running = false; }
-
+    void reset_rto(unsigned int rto) {
+        _rto = rto;
+        _running = false;
+    }
 };
 
 //! Accepts a ByteStream, divides it up into segments and sends the
@@ -89,7 +94,6 @@ class TCPSender {
 
     //! Get ackno
     WrappingInt32 _ackno(void) const;
-
 
   public:
     //! Initialize a TCPSender
