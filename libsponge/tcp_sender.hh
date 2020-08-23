@@ -11,6 +11,34 @@
 
 //! \brief The "sender" part of a TCP implementation.
 
+//! Timer for retransmission
+class Timer {
+  private:
+    bool _running{false};
+
+    size_t _start_time{0};
+
+    size_t _now_time{0};
+
+    unsigned int _rto{0};
+
+  public:
+    Timer(unsigned int rto) : _rto(rto) {}
+
+    void update_time(size_t timestamp) { _now_time = timestamp; }
+
+    bool timeout(void) const { return (running() && (_now_time - _start_time > _rto)); }
+
+    void double_rto(void) { _rto *= 2u; }
+
+    void start(size_t timestamp) { _start_time = _now_time = timestamp; _running = true; }
+
+    bool running(void) const { return _running; }
+
+    void reset_rto(unsigned int rto) { _rto = rto; _running = false; }
+
+};
+
 //! Accepts a ByteStream, divides it up into segments and sends the
 //! segments, keeps track of which segments are still in-flight,
 //! maintains the Retransmission Timer, and retransmits in-flight
@@ -30,7 +58,35 @@ class TCPSender {
     ByteStream _stream;
 
     //! the (absolute) sequence number for the next byte to be sent
-    uint64_t _next_seqno{0};
+    // uint64_t _next_seqno{0};
+
+    //! the retansmission timer
+    Timer _timer;
+
+    //! consecutive retransmissions
+    unsigned int _consecutive_retrans{0};
+
+    //! unacknowlege segments
+    std::queue<TCPSegment> _segments_unack{};
+
+    //! timestamp
+    size_t _timestamp{0};
+
+    //! bytes sent (absolute sequence number of the next byte)
+    uint64_t _bytes_sent{0};
+
+    //! bytes already received by TCPReceiver
+    uint64_t _bytes_received{0};
+
+    //! windows size
+    uint16_t _window_size{1};
+
+    //! Get next relative sequence number
+    // WrappingInt32 _next_seqno(void) const;
+
+    //! Get ackno
+    WrappingInt32 _ackno(void) const;
+
 
   public:
     //! Initialize a TCPSender
@@ -82,10 +138,10 @@ class TCPSender {
     //!@{
 
     //! \brief absolute seqno for the next byte to be sent
-    uint64_t next_seqno_absolute() const { return _next_seqno; }
+    uint64_t next_seqno_absolute() const { return _bytes_sent; }
 
     //! \brief relative seqno for the next byte to be sent
-    WrappingInt32 next_seqno() const { return wrap(_next_seqno, _isn); }
+    WrappingInt32 next_seqno() const { return wrap(_bytes_sent, _isn); }
     //!@}
 };
 
