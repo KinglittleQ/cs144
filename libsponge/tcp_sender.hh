@@ -81,6 +81,9 @@ class TCPSender {
     //! windows size
     uint16_t _window_size{1};
 
+    //! eof
+    bool _eof{false};
+
     //! Get next relative sequence number
     // WrappingInt32 _next_seqno(void) const;
 

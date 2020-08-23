@@ -3,7 +3,7 @@
 #include "tcp_config.hh"
 
 #include <random>
-
+#include <iostream>
 // Dummy implementation of a TCP sender
 
 // For Lab 3, please replace with a real implementation that passes the
@@ -27,6 +27,10 @@ uint64_t TCPSender::bytes_in_flight() const { return _bytes_sent - _bytes_receiv
 
 void TCPSender::fill_window() {
     TCPSegment seg;
+
+    if (_eof) {
+        return;
+    }
 
     if (_stream.eof()) {
         seg.header().fin = true;
@@ -52,12 +56,16 @@ void TCPSender::fill_window() {
 	return;
     }
 
-    seg.payload() = Buffer(move(_stream.read(payload_length)));
+    seg.payload() = Buffer(_stream.read(payload_length));
     seg.header().seqno = next_seqno();
 
     _segments_out.push(seg);
     _segments_unack.push(seg);
     _bytes_sent += seg.length_in_sequence_space();
+
+    if (seg.header().fin) {
+        _eof = true;
+    }
 
     if (!_timer.running()) {
 	_timer.reset_rto(_initial_retransmission_timeout);
