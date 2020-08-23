@@ -48,6 +48,10 @@ void TCPSender::fill_window() {
 	payload_length = TCPConfig::MAX_PAYLOAD_SIZE;
     }
 
+    if (label_size + payload_length == 0u) {
+	return;
+    }
+
     seg.payload() = Buffer(move(_stream.read(payload_length)));
     seg.header().seqno = next_seqno();
 
@@ -77,22 +81,30 @@ bool TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
     }
 
     _window_size = window_size;
+    if (abs_ackno == _bytes_received) {
+        fill_window();
+	return true;
+    }
 
     // new data been ack
-    if (abs_ackno > _bytes_received) {
-        _timer.reset_rto(_initial_retransmission_timeout);
-        _timer.start(_timestamp);
-	_consecutive_retrans = 0;
-    }
+    _timer.reset_rto(_initial_retransmission_timeout);
+    //_timer.start(_timestamp);
+    _consecutive_retrans = 0;
+    _bytes_received = abs_ackno;
 
     while (!_segments_unack.empty()) {
 	TCPSegment &seg = _segments_unack.front();
         uint64_t abs_seqno = unwrap(seg.header().seqno, _isn, _bytes_received);
 	if (abs_seqno + seg.length_in_sequence_space() <= abs_ackno) {
             _segments_unack.pop();
+	} else {
+            break;
 	}
     }
 
+    if (!_segments_unack.empty()) {
+        _timer.start(_timestamp);
+    }
     // _consecutive_retrans = 0;
     fill_window();
 
