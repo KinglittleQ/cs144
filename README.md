@@ -3,7 +3,7 @@
 - [x] Lab 0: networking warmup
 - [x] Lab 1: stitching substrings into a byte stream
 - [x] Lab 2: tcp receiver
-- [ ] Lab 3
+- [x] Lab 3: tcp sender
 - [ ] Lab 4
 - [ ] Lab 5
 - [ ] Lab 6
