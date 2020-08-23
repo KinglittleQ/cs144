@@ -32,15 +32,9 @@ void TCPSender::fill_window() {
         return;
     }
 
-    // if (_stream.eof()) {
-    //    seg.header().fin = true;
-    //}
     if (_bytes_sent == 0) {
         seg.header().syn = true;
     }
-
-    // size_t syn = seg.header().syn ? 1 : 0;
-    // size_t fin =
 
     size_t label_size = seg.length_in_sequence_space();
     uint16_t window_size = _window_size > 0u ? _window_size : 1u;
@@ -81,9 +75,6 @@ void TCPSender::fill_window() {
 //! \param window_size The remote receiver's advertised window size
 //! \returns `false` if the ackno appears invalid (acknowledges something the TCPSender hasn't sent yet)
 bool TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_size) {
-    // DUMMY_CODE(ackno, window_size);
-    // return {};
-
     uint64_t abs_ackno = unwrap(ackno, _isn, _bytes_received);
     if (abs_ackno > _bytes_sent) {
         return false;
@@ -100,7 +91,6 @@ bool TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
 
     // new data been ack
     _timer.reset_rto(_initial_retransmission_timeout);
-    //_timer.start(_timestamp);
     _consecutive_retrans = 0;
     _bytes_received = abs_ackno;
 
@@ -117,7 +107,6 @@ bool TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
     if (!_segments_unack.empty()) {
         _timer.start(_timestamp);
     }
-    // _consecutive_retrans = 0;
     fill_window();
 
     return true;
@@ -125,7 +114,6 @@ bool TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
 
 //! \param[in] ms_since_last_tick the number of milliseconds since the last call to this method
 void TCPSender::tick(const size_t ms_since_last_tick) {
-    // DUMMY_CODE(ms_since_last_tick);
     _timestamp += ms_since_last_tick;
 
     if (!_timer.running()) {
@@ -148,10 +136,3 @@ void TCPSender::send_empty_segment() {
     seg.header().seqno = next_seqno();
     _segments_out.push(seg);
 }
-
-/*
-WrappingInt32 TCPSender::_next_seqno(void) const {
-    return wrap(_bytes_sent, _isn);
-}*/
-
-WrappingInt32 TCPSender::_ackno(void) const { return wrap(_bytes_received, _isn); }

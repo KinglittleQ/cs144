@@ -89,12 +89,6 @@ class TCPSender {
     //! eof
     bool _eof{false};
 
-    //! Get next relative sequence number
-    // WrappingInt32 _next_seqno(void) const;
-
-    //! Get ackno
-    WrappingInt32 _ackno(void) const;
-
   public:
     //! Initialize a TCPSender
     TCPSender(const size_t capacity = TCPConfig::DEFAULT_CAPACITY,
