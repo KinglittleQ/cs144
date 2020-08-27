@@ -65,7 +65,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
 	return;
     }
 
-    // LISTEN, ignored ACK
+    // LISTEN or SYN_SENT, ignore empty ACK
     if (empty_seg && !_receiver.ackno().has_value() /* && _sender.next_seqno_absolute() == 0 */) {
         return;
     }
@@ -77,7 +77,10 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
 
     if (hdr.ack) {
         ackno_valid = _sender.ack_received(hdr.ackno, hdr.win);
+    } else {
+        _sender.fill_window();
     }
+
     // do not need to send ACK
     if ( empty_seg && ackno_valid && payload_valid )  {
         return;
