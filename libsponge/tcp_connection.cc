@@ -21,13 +21,12 @@ void TCPConnection::_dump_receiver_info(TCPSegment &seg) {
 }
 
 void TCPConnection::_move_segment_to_outbound(void) {
-    if (_sender.segments_out().empty()) {
-        return;
+    while (!_sender.segments_out().empty()) {
+        TCPSegment &seg = _sender.segments_out().front();
+        _dump_receiver_info(seg);
+        _segments_out.push(seg);
+        _sender.segments_out().pop();
     }
-    TCPSegment &seg = _sender.segments_out().front();
-    _dump_receiver_info(seg);
-    _segments_out.push(seg);
-    _sender.segments_out().pop();
 }
 
 void TCPConnection::_send_rst_segment(void) {

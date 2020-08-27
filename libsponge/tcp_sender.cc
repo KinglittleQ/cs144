@@ -69,6 +69,8 @@ void TCPSender::fill_window() {
         _timer.reset_rto(_initial_retransmission_timeout);
         _timer.start(_timestamp);
     }
+
+    fill_window();
 }
 
 //! \param ackno The remote receiver's ackno (acknowledgment number)
