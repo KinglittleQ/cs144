@@ -138,7 +138,6 @@ size_t TCPConnection::write(const string &data) {
 //! \param[in] ms_since_last_tick number of milliseconds since the last call to this method
 void TCPConnection::tick(const size_t ms_since_last_tick) { 
     _sender.tick(ms_since_last_tick);
-    _move_segment_to_outbound();
     _timestamp += ms_since_last_tick;
 
     if ( _sender.consecutive_retransmissions() > _cfg.MAX_RETX_ATTEMPTS ) {
@@ -147,6 +146,7 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
 	_receiver.stream_out().set_error();
         _send_rst_segment();
     }
+    _move_segment_to_outbound();
 }
 
 void TCPConnection::end_input_stream() { 
