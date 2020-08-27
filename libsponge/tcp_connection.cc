@@ -66,7 +66,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
     }
 
     // LISTEN, ignored ACK
-    if (empty_seg && !_receiver.ackno().has_value() && _sender.next_seqno_absolute() == 0) {
+    if (empty_seg && !_receiver.ackno().has_value() /* && _sender.next_seqno_absolute() == 0 */) {
         return;
     }
 
