@@ -40,7 +40,8 @@ bool TCPReceiver::segment_received(const TCPSegment &seg) {
         uint64_t left_bound, right_bound;
         uint64_t left_seg, right_seg;
         uint64_t win_size = window_size();
-        uint64_t length = seg.length_in_sequence_space();
+        // uint64_t length = seg.length_in_sequence_space();
+        uint64_t length = seg.payload().size();
         win_size = win_size != 0ul ? win_size : 1ul;
         length = length != 0ul ? length : 1ul;
 
