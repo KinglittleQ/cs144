@@ -51,10 +51,10 @@ bool TCPReceiver::segment_received(const TCPSegment &seg) {
         left_seg = unwrap(hdr.seqno, _isn, checkpoint);
         right_seg = left_seg + length;
 
-	if (hdr.syn) {
+        if (hdr.syn) {
             left_bound += 1ul;
-	    left_seg += 1ul;
-	}
+            left_seg += 1ul;
+        }
 
         bool inbound = (left_bound < right_seg && left_seg < right_bound);
         _reassembler.push_substring(seg.payload().copy(), index, hdr.fin);
