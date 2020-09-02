@@ -13,48 +13,40 @@ using namespace std;
 bool TCPReceiver::segment_received(const TCPSegment &seg) {
     const TCPHeader &hdr = seg.header();
 
-    bool not_start = (!_start);
-    if (not_start) {
+    // bool not_start = (!_start);
+    if (!_start) {
         if (hdr.syn) {
             _isn = hdr.seqno;
             _start = true;
-            if (hdr.fin) {
-                _end = true;
-            }
+            _end = hdr.fin;
         } else if (hdr.fin) {
             return true;
         } else {
             return false;
         }
 
-        _reassembler.push_substring(seg.payload().copy(), 0ul, hdr.fin);
+        _reassembler.push_substring(seg.payload().copy(), 0, hdr.fin);
 
         return true;
     } else {
         uint64_t checkpoint = _reassembler.stream_out().bytes_written();
         uint64_t index = unwrap(hdr.seqno, _isn, checkpoint);
         if (!hdr.syn) {
-            index = index - 1ul;
+            index = index - 1;
         }
 
         uint64_t left_bound, right_bound;
         uint64_t left_seg, right_seg;
         uint64_t win_size = window_size();
-        // uint64_t length = seg.length_in_sequence_space();
         uint64_t length = seg.payload().size();
-        win_size = win_size != 0ul ? win_size : 1ul;
-        length = length != 0ul ? length : 1ul;
+        win_size = (win_size == 0 ? 1 : win_size);
+        length = (length == 0 ? 1 : length);
 
         left_bound = unwrap(ackno().value(), _isn, checkpoint);
 
         right_bound = left_bound + win_size;
         left_seg = unwrap(hdr.seqno, _isn, checkpoint);
         right_seg = left_seg + length;
-
-        if (hdr.syn) {
-            left_bound += 1ul;
-            left_seg += 1ul;
-        }
 
         bool inbound = (left_bound < right_seg && left_seg < right_bound);
         _reassembler.push_substring(seg.payload().copy(), index, hdr.fin);
@@ -68,7 +60,9 @@ bool TCPReceiver::segment_received(const TCPSegment &seg) {
 
 optional<WrappingInt32> TCPReceiver::ackno() const {
     if (_start) {
-        uint64_t n = 1ul + _reassembler.stream_out().bytes_written() + _end;
+        // fin is received but may not be assembled
+        uint64_t end = static_cast<uint64_t>(_end && _reassembler.unassembled_bytes() == 0);
+        uint64_t n = 1 + _reassembler.stream_out().bytes_written() + end;
         return wrap(n, _isn);
     } else {
         return nullopt;
