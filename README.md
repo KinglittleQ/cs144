@@ -5,7 +5,7 @@
 - [x] Lab 2: tcp receiver
 - [x] Lab 3: tcp sender
 - [x] Lab 4: tcp in full
-- [ ] Lab 5
+- [x] Lab 5: network interface
 - [ ] Lab 6
 
 ------
