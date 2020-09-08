@@ -20,7 +20,7 @@ void get_URL(const string &host, const string &path) {
     // cerr << "Function called: get_URL(" << host << ", " << path << ").\n";
     // cerr << "Warning: get_URL() has not been implemented yet.\n";
 
-    CS144TCPSocket sock{};
+    FullStackSocket sock{};
     Address addr(host, "http");
     sock.connect(addr);
 

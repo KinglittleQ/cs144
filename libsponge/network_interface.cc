@@ -14,6 +14,8 @@
 // You will need to add private members to the class declaration in `network_interface.hh`
 
 const EthernetAddress BROADCAST_ADDRESS{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+const uint64_t MAP_EXPIRE_TIME = 30 * 1000;
+const uint64_t REQUEST_EXPIRE_TIME = 5 * 1000;
 
 template <typename... Targs>
 void DUMMY_CODE(Targs &&... /* unused */) {}
@@ -39,7 +41,7 @@ void NetworkInterface::send_datagram(const InternetDatagram &dgram, const Addres
     frame.header().src = _ethernet_address;
 
     const auto iter = map_.find(next_hop_ip);
-    if (iter == map_.cend() || timestamp_ - iter->second.time_updated > 30000) {
+    if (iter == map_.cend() || timestamp_ - iter->second.time_updated > MAP_EXPIRE_TIME) {
         // Not found or expire
 
         unsent_datagrams_.emplace_back(dgram, next_hop_ip);
@@ -52,7 +54,7 @@ void NetworkInterface::send_datagram(const InternetDatagram &dgram, const Addres
         // Test if already sent a request in 5 seconds
         if (list_iter != unreplied_arp_requests_.end()) {
             uint64_t duration = timestamp_ - list_iter->time_sent;
-            if (duration <= 5000) {
+            if (duration <= REQUEST_EXPIRE_TIME) {
                 return;
             }
         }
@@ -152,7 +154,6 @@ optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &fra
                     f.header().type = EthernetHeader::TYPE_IPv4;
                     _frames_out.push(f);
 
-                    // send_datagram(iter2->first, iter2->second);
                     iter2 = unsent_datagrams_.erase(iter2);
                 } else {
                     iter2++;
