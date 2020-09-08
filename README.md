@@ -6,7 +6,7 @@
 - [x] Lab 3: tcp sender
 - [x] Lab 4: tcp in full
 - [x] Lab 5: network interface
-- [ ] Lab 6
+- [x] Lab 6: ip router
 
 ------
 
